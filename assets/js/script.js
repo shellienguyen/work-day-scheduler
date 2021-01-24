@@ -34,11 +34,6 @@ let formatTimeBlocks = function() {
       let currentBlock = $( this );
       let currentBlockTime = parseInt( currentBlock.attr( "block-hour-data" ));
 
-      /* console.log( "currentBlockTime: " + currentBlockTime );
-      console.log( "currentHour: " + currentHour );
-      console.log( "this.textContent: " + this.textContent.trim() );
-      console.log( "" ); */
-
       // If the block time hour is the same as the current real time hour,
       //   display it in white, then remove css classes that don't apply
       if( currentBlockTime === currentHour ) {
@@ -87,9 +82,7 @@ let loadTasks = function() {
    taskListArr = localStorage.getItem( "taskList" );
    taskListArr = JSON.parse( taskListArr );
 
-   // Loop through the task array retrieved from localStorage and disply tasks
-   //   console.log( "taskListArr.length: " + taskListArr.length );
-   //if ( taskListArr ) {
+   // Loop through the task array retrieved from localStorage and display tasks
    console.log( taskListArr );
    for ( let i = 0; i < taskListArr.length; i++ ) {
       let itemTimeBlock = taskListArr[ i ].timeBlock;
@@ -97,7 +90,6 @@ let loadTasks = function() {
 
       $( "[block-hour-data = " + itemTimeBlock + "]" ).children( "textarea" ).val( itemTaskText );
    };
-   //};
 };
 
 ////////////////////////////////////
@@ -132,8 +124,6 @@ $( document ).ready( function() {
    formatTimeBlocks();
 
    let tasks = JSON.parse( localStorage.getItem( "taskList" ));
-
-   //console.log( "document.ready - tasks: " + tasks );
 
    // If localStorage is empty, create task array to hold tasks
    if ( !tasks || !tasks.length ) {
