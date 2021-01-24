@@ -1,7 +1,9 @@
 let timeBlocks = $( ".time-block" );
 let currentHour = moment().format( "H" );
-let blockTimeCnt = 0;
 let taskListArr = [];
+let theScheduler = $(".container" );
+
+////////////////////////////////////
 
 let displayTodaysDate = function () {
    let today = new Date();
@@ -11,8 +13,8 @@ let displayTodaysDate = function () {
    let month = monthNames[ today.getMonth() ]; 
    
    // Map returned day-of-the-week (which is a number) to full day-of-the-week name
-   const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" ];
-   let dayOfTheWeek = dayNames[ ( today.getDay() -1 ) ];
+   const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" ];
+   let dayOfTheWeek = dayNames[ today.getDay() ];
 
    let date = today.getDate();
    let year = today.getFullYear();
@@ -23,22 +25,19 @@ let displayTodaysDate = function () {
    todaysDate.textContent = dayOfTheWeek + ", " + month + " " + date + ", " + year;
 }
 
+////////////////////////////////////
+
 // For each time block on the page, check to see if it's in the past, present,
 //   or future
 let formatTimeBlocks = function() {
    timeBlocks.each( function() {
       let currentBlock = $( this );
-      //let currentBlockTime = parseInt( timeBlocks.attr( "block-cnt" ));
-      //let currentBlockTime = parseInt(( this.textContent.trim() ).slice( 0, -2 ));
+      let currentBlockTime = parseInt( currentBlock.attr( "block-hour-data" ));
 
-      // Map blockTimeCnt to the block time array
-      const timeBlockVal = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 ];
-      let currentBlockTime = timeBlockVal[ blockTimeCnt ];
-
-      console.log( "currentBlockTime: " + currentBlockTime );
+      /* console.log( "currentBlockTime: " + currentBlockTime );
       console.log( "currentHour: " + currentHour );
       console.log( "this.textContent: " + this.textContent.trim() );
-      console.log( "" );
+      console.log( "" ); */
 
       // If the block time hour is the same as the current real time hour,
       //   display it in white, then remove css classes that don't apply
@@ -49,22 +48,23 @@ let formatTimeBlocks = function() {
       else if ( currentBlockTime < currentHour ) {
          currentBlock.addClass( "past" ).removeClass( "present future" );
       }
-      // If the clock time is in the future, use another color
+      // If the block time is in the future, use another color
       else if ( currentBlockTime > currentHour ) {
          currentBlock.addClass( "future" ).removeClass( "past present" );
       };
-
-      blockTimeCnt++;
    });
 };
 
-// Create a task array to hold tasks, for storying in localStorage
+////////////////////////////////////
+
+// Create a task array to hold tasks, for storing in localStorage
 let createTaskArr = function() {
-   // Loop through each time block
-   console.log( "inside createTaskArr" );
+   console.log( "Start createTaskArr fn" );
+
+   // Loop through each time block to add each time block object to the array
    timeBlocks.each( function() {
       let currentBlock = $( this );
-      let currentBlockHour = parseInt( currentBlock.attr( "block-cnt" ));
+      let currentBlockHour = parseInt( currentBlock.attr( "block-hour-data" ));
 
       let taskObj = {
          timeBlock: currentBlockHour,
@@ -75,29 +75,51 @@ let createTaskArr = function() {
       taskListArr.push( taskObj );
    });
 
-   console.log( "blah" );
    // When done looping through all the time blocks, save to localStorage
    localStorage.setItem( "taskList", JSON.stringify( taskListArr ));
-   console.log ( "taskListArr: " + taskListArr );
+   console.log ( "End createTaskArr fn - taskListArr: " + taskListArr );
 };
+
+////////////////////////////////////
 
 let loadTasks = function() {
    // Retrieve task array from localStorage
-   taskListArr = localStorage.getItem( "tasklist" );
+   taskListArr = localStorage.getItem( "taskList" );
    taskListArr = JSON.parse( taskListArr );
 
    // Loop through the task array retrieved from localStorage and disply tasks
-//   console.log( "taskListArr.length: " + taskListArr.length );
-   if ( taskListArr ) {
-      for ( let i = 0; i < taskListArr.length; i++ ) {
-         console.log( "inside for: " + i );
-         let itemTimeBlock = taskListArrp[ i ].timeBlock;
-         let itemTaskText = taskListArr[ i ].taskText;
+   //   console.log( "taskListArr.length: " + taskListArr.length );
+   //if ( taskListArr ) {
+   console.log( taskListArr );
+   for ( let i = 0; i < taskListArr.length; i++ ) {
+      let itemTimeBlock = taskListArr[ i ].timeBlock;
+      let itemTaskText = taskListArr[ i ].taskText;
 
-         $( "[block-cnt = " + itemTimeBlock + "]" ).children( "textarea" ).val( itemTaskText );
+      $( "[block-hour-data = " + itemTimeBlock + "]" ).children( "textarea" ).val( itemTaskText );
+   };
+   //};
+};
+
+////////////////////////////////////
+
+let saveTask = function() {
+   let hourBlockToUpdate = $( this ).parent().attr( "block-hour-data" );
+   let newTask = $( this ).siblings( "textarea" ).val();
+
+   // Update the task
+   for ( let i = 0; i < taskListArr.length; i++ ) {
+      if( taskListArr[ i ].timeBlock == hourBlockToUpdate ) {
+         taskListArr[ i ].taskText = newTask;
+         console.log( "saveTask fn, inside if - i: " + i )
+         console.log( "saveTask fn, inside if - newTask: " + newTask );
       };
    };
+
+   localStorage.setItem( "taskList", JSON.stringify( taskListArr ));
+   loadTasks();
 };
+
+////////////////////////////////////
 
 // Upon page load
 $( document ).ready( function() {
@@ -109,20 +131,21 @@ $( document ).ready( function() {
    //   the past, present, or future.
    formatTimeBlocks();
 
-   console.log( "before if" );
    let tasks = JSON.parse( localStorage.getItem( "taskList" ));
 
-   console.log( "tasks: " + tasks );
+   //console.log( "document.ready - tasks: " + tasks );
 
    // If localStorage is empty, create task array to hold tasks
    if ( !tasks || !tasks.length ) {
-      console.log( "inside if" );
+      console.log( "document.ready - inside if" );
       createTaskArr();
    }
    else {
-      console.log( "inside else" );
+      console.log( "document.ready - inside else" );
       // Load tasks from localStorage
       loadTasks();
+
+      // Save the task each time the user clicks on the button to save
+      theScheduler.on( "click", "button", saveTask );
    };
-   console.log( "after if/else" );
 });
