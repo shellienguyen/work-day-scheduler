@@ -37,7 +37,7 @@ let formatTimeBlocks = function() {
       // If the block time hour is the same as the current real time hour,
       //   display it in white, then remove css classes that don't apply
       if( currentBlockTime == currentHour ) {
-q         currentBlock.addClass( "present" ).removeClass( "past future" );
+         currentBlock.addClass( "present" ).removeClass( "past future" );
       }
       // If the block time is in the past, gray it out
       else if ( currentBlockTime < currentHour ) {
